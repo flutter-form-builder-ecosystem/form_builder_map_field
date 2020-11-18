@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_map_field/form_builder_map_field.dart';
 
@@ -40,8 +39,8 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             children: <Widget>[
               Container(
-                child: FormBuilderMapField(
-                  attribute: 'Coordinates',
+                child: FormBuilderLocationField(
+                  name: 'coordinates',
                   decoration: InputDecoration(labelText: 'Select Location'),
                   markerIconColor: Colors.red,
                   markerIconSize: 50,
