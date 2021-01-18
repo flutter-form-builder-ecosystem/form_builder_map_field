@@ -159,7 +159,7 @@ class _LocationFieldDialogState extends State<LocationFieldDialog> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     FloatingActionButton(
                       backgroundColor: theme.scaffoldBackgroundColor,
