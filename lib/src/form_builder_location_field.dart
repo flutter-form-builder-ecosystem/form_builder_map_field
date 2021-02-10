@@ -1,3 +1,5 @@
+// @dart=2.9
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -227,9 +229,8 @@ class FormBuilderLocationField extends FormBuilderField<CameraPosition> {
           decoration: decoration,
           builder: (FormFieldState<CameraPosition> field) {
             final state = field as _FormBuilderLocationFieldState;
-            final InputDecoration effectiveDecoration = (decoration ??
-                    const InputDecoration())
-                .applyDefaults(Theme.of(field.context).inputDecorationTheme);
+            final InputDecoration effectiveDecoration =
+                (decoration ?? const InputDecoration()).applyDefaults(Theme.of(field.context).inputDecorationTheme);
 
             return TextField(
               decoration: effectiveDecoration.copyWith(
@@ -253,12 +254,10 @@ class FormBuilderLocationField extends FormBuilderField<CameraPosition> {
         );
 
   @override
-  _FormBuilderLocationFieldState createState() =>
-      _FormBuilderLocationFieldState();
+  _FormBuilderLocationFieldState createState() => _FormBuilderLocationFieldState();
 }
 
-class _FormBuilderLocationFieldState
-    extends FormBuilderFieldState<FormBuilderLocationField, CameraPosition> {
+class _FormBuilderLocationFieldState extends FormBuilderFieldState<FormBuilderLocationField, CameraPosition> {
   TextEditingController _textFieldController;
 
   String get valueString => value?.target?.toString() ?? '';
@@ -281,8 +280,7 @@ class _FormBuilderLocationFieldState
 
   Future<void> _handleFocus() async {
     if (effectiveFocusNode.hasFocus && widget.enabled) {
-      await Future.microtask(
-          () => FocusScope.of(context).requestFocus(FocusNode()));
+      await Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
       final newValue = await showDialog<CameraPosition>(
         context: context,
         builder: (context) => LocationFieldDialog(
@@ -329,8 +327,7 @@ class _FormBuilderLocationFieldState
   @override
   void didChange(CameraPosition value) {
     super.didChange(value);
-    _textFieldController.text =
-        widget.valueTransformer?.call(value)?.toString() ?? valueString;
+    _textFieldController.text = widget.valueTransformer?.call(value)?.toString() ?? valueString;
     widget.onChanged?.call(value);
   }
 
@@ -349,7 +346,5 @@ class _FormBuilderLocationFieldState
   }
 
   bool shouldShowClearIcon([InputDecoration decoration]) =>
-      widget.resetIcon != null &&
-      (_textFieldController.text.isNotEmpty || effectiveFocusNode.hasFocus) &&
-      decoration?.suffixIcon == null;
+      widget.resetIcon != null && (_textFieldController.text.isNotEmpty || effectiveFocusNode.hasFocus) && decoration?.suffixIcon == null;
 }
