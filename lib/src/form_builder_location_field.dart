@@ -1,3 +1,5 @@
+// @dart=2.9
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -161,16 +163,14 @@ class FormBuilderLocationField extends FormBuilderField<CameraPosition> {
   final Color markerIconColor;
   final double height;
   final bool allowClear;
-  final Widget clearIcon;
-
-  // final TextEditingController textEditingController;
+  final Widget resetIcon;
+  final TextEditingController controller;
 
   FormBuilderLocationField({
     Key key,
     //From Super
     @required String name,
     FormFieldValidator<CameraPosition> validator,
-    CameraPosition initialValue,
     InputDecoration decoration = const InputDecoration(),
     ValueChanged<CameraPosition> onChanged,
     ValueTransformer<CameraPosition> valueTransformer,
@@ -180,7 +180,7 @@ class FormBuilderLocationField extends FormBuilderField<CameraPosition> {
     VoidCallback onReset,
     FocusNode focusNode,
     this.allowClear = true,
-    this.clearIcon = const Icon(Icons.close),
+    this.resetIcon = const Icon(Icons.close),
     this.markerIcon = Icons.person_pin_circle_sharp,
     this.markerIconSize = 30,
     this.markerIconColor = Colors.black,
@@ -214,9 +214,10 @@ class FormBuilderLocationField extends FormBuilderField<CameraPosition> {
     this.onMapCreated,
     this.initialCameraPosition,
     this.onCameraMove,
+    this.controller,
   }) : super(
           key: key,
-          initialValue: initialValue,
+          initialValue: initialCameraPosition,
           name: name,
           validator: validator,
           valueTransformer: valueTransformer,
@@ -228,67 +229,58 @@ class FormBuilderLocationField extends FormBuilderField<CameraPosition> {
           decoration: decoration,
           builder: (FormFieldState<CameraPosition> field) {
             final state = field as _FormBuilderLocationFieldState;
+            final InputDecoration effectiveDecoration =
+                (decoration ?? const InputDecoration()).applyDefaults(Theme.of(field.context).inputDecorationTheme);
 
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: state.decoration(),
-                    enabled: enabled,
-                    // Setting readOnly to be true hides the keyboard
-                    readOnly: true,
-                    controller: state.effectiveController,
-                    focusNode: state.effectiveFocusNode,
-                    // style: style,
-                    // autofocus: autofocus,
-                  ),
-                ),
-                if (allowClear && enabled && state.value != null)
-                  InkWell(
-                    child: clearIcon,
-                    onTap: () {
-                      state.didChange(null);
-                      FocusScope.of(state.context).requestFocus(FocusNode());
-                    },
-                  ),
-              ],
+            return TextField(
+              decoration: effectiveDecoration.copyWith(
+                errorText: field.errorText,
+                suffixIcon: state.shouldShowClearIcon(effectiveDecoration)
+                    ? IconButton(
+                        icon: resetIcon,
+                        onPressed: state.clear,
+                      )
+                    : null,
+              ),
+              enabled: enabled,
+              // Setting readOnly to be true hides the keyboard
+              readOnly: true,
+              controller: state._textFieldController,
+              focusNode: state.effectiveFocusNode,
+              // style: style,
+              // autofocus: autofocus,
             );
           },
         );
 
   @override
-  _FormBuilderLocationFieldState createState() =>
-      _FormBuilderLocationFieldState();
+  _FormBuilderLocationFieldState createState() => _FormBuilderLocationFieldState();
 }
 
-class _FormBuilderLocationFieldState
-    extends FormBuilderFieldState<FormBuilderLocationField, CameraPosition> {
-  TextEditingController _controller;
-
-  TextEditingController get effectiveController =>
-      /*widget.textEditingController ??*/ _controller;
+class _FormBuilderLocationFieldState extends FormBuilderFieldState<FormBuilderLocationField, CameraPosition> {
+  TextEditingController _textFieldController;
 
   String get valueString => value?.target?.toString() ?? '';
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
-    effectiveController.text = valueString;
-    effectiveFocusNode.addListener(_handleFocus);
+    _textFieldController = widget.controller ?? TextEditingController();
+    effectiveFocusNode?.addListener(_handleFocus);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    // Dispose the _textFieldController when initState created it
+    if (null == widget.controller) {
+      _textFieldController.dispose();
+    }
     super.dispose();
   }
 
   Future<void> _handleFocus() async {
     if (effectiveFocusNode.hasFocus && widget.enabled) {
-      await Future.microtask(
-          () => FocusScope.of(context).requestFocus(FocusNode()));
+      await Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
       final newValue = await showDialog<CameraPosition>(
         context: context,
         builder: (context) => LocationFieldDialog(
@@ -335,6 +327,24 @@ class _FormBuilderLocationFieldState
   @override
   void didChange(CameraPosition value) {
     super.didChange(value);
-    effectiveController.text = valueString ?? '';
+    _textFieldController.text = widget.valueTransformer?.call(value)?.toString() ?? valueString;
+    widget.onChanged?.call(value);
   }
+
+  void clear() async {
+    _hideKeyboard();
+    // Fix for ripple effect throwing exception
+    // and the field staying gray.
+    // https://github.com/flutter/flutter/issues/36324
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() => _textFieldController.clear());
+    });
+  }
+
+  void _hideKeyboard() {
+    Future.microtask(() => FocusScope.of(context).requestFocus(FocusNode()));
+  }
+
+  bool shouldShowClearIcon([InputDecoration decoration]) =>
+      widget.resetIcon != null && (_textFieldController.text.isNotEmpty || effectiveFocusNode.hasFocus) && decoration?.suffixIcon == null;
 }

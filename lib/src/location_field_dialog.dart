@@ -1,3 +1,5 @@
+// @dart=2.9
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -159,7 +161,7 @@ class _LocationFieldDialogState extends State<LocationFieldDialog> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     FloatingActionButton(
                       backgroundColor: theme.scaffoldBackgroundColor,
