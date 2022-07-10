@@ -234,7 +234,7 @@ class FormBuilderLocationField extends FormBuilderField<CameraPosition> {
               children: [
                 Expanded(
                   child: TextField(
-                    decoration: state.decoration(),
+                    decoration: state.decoration,
                     enabled: enabled,
                     // Setting readOnly to be true hides the keyboard
                     readOnly: true,
