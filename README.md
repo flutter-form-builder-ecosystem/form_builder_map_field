@@ -1,4 +1,10 @@
-# form_builder_map_field
+# [Discontinued] form_builder_map_field
+
+This package is discontinued because this reasons:
+
+- Easy to implement by developers
+- Hard to mantain by community (one more package and dependency with google_maps_flutter)
+- Only provide a solution to Google and no for others providers like OpenMaps
 
 Map Input Field for flutter_form_builder package. Used to select coordinates on a map.
 
